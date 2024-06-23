@@ -1,4 +1,6 @@
 
 Current Tutorial:
+50:00 Explain the API Documentation
+40:00 Implement the modal bottom sheet
 30:00 Build the chat widget
 19:00 Start building the chat screen
