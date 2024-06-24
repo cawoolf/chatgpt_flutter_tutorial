@@ -1,10 +1,13 @@
 
 import 'package:chatgpt_flutter_tutorial/widgets/text_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../constants/constants.dart';
 import '../models/models_model.dart';
+import '../providers/models_provider.dart';
 import '../services/api_services.dart';
+
 
 class ModelsDropDownWidget extends StatefulWidget {
   const ModelsDropDownWidget({super.key});
@@ -14,11 +17,13 @@ class ModelsDropDownWidget extends StatefulWidget {
 }
 
 class _ModelsDropDownWidgetState extends State<ModelsDropDownWidget> {
-  String currentModel = "gpt-3.5-turbo-0613";
+  String? currentModel;
   @override
   Widget build(BuildContext context) {
+    final modelsProvider = Provider.of<ModelsProvider>(context, listen: false);
+    currentModel = modelsProvider.getCurrentModel;
     return FutureBuilder<List<ModelsModel>>(
-        future: ApiService.getModels(),
+        future: modelsProvider.getAllModels(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
@@ -27,30 +32,29 @@ class _ModelsDropDownWidgetState extends State<ModelsDropDownWidget> {
           }
           return snapshot.data == null || snapshot.data!.isEmpty
               ? const SizedBox.shrink()
-              : buildModelDropDown(snapshot);
+              : FittedBox(
+            child: DropdownButton(
+              dropdownColor: scaffoldBackgroundColor,
+              iconEnabledColor: Colors.white,
+              items: List<DropdownMenuItem<String>>.generate(
+                  snapshot.data!.length,
+                      (index) => DropdownMenuItem(
+                      value: snapshot.data![index].id,
+                      child: TextWidget(
+                        label: snapshot.data![index].id,
+                        fontSize: 15,
+                      ))),
+              value: currentModel,
+              onChanged: (value) {
+                setState(() {
+                  currentModel = value.toString();
+                });
+                modelsProvider.setCurrentModel(
+                  value.toString(),
+                );
+              },
+            ),
+          );
         });
-  }
-
-  FittedBox buildModelDropDown(AsyncSnapshot<List<ModelsModel>> snapshot) {
-    return FittedBox(
-          child: DropdownButton(
-            dropdownColor: scaffoldBackgroundColor,
-            iconEnabledColor: Colors.white,
-            items: List<DropdownMenuItem<String>>.generate(
-                snapshot.data!.length,
-                    (index) => DropdownMenuItem(
-                    value: snapshot.data![index].id,
-                    child: TextWidget(
-                      label: snapshot.data![index].id,
-                      fontSize: 15,
-                    ))),
-            value: currentModel,
-            onChanged: (value) {
-              setState(() {
-                currentModel = value.toString();
-              });
-            },
-          ),
-        );
   }
 }
