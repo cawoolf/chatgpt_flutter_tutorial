@@ -14,7 +14,7 @@ class ModelsDropDownWidget extends StatefulWidget {
 }
 
 class _ModelsDropDownWidgetState extends State<ModelsDropDownWidget> {
-  String currentModel = "gpt-3.5-turbo";
+  String currentModel = "gpt-3.5-turbo-0613";
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<ModelsModel>>(

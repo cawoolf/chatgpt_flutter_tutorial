@@ -17,20 +17,16 @@ class ApiService {
       Map jsonResponse = jsonDecode(response.body);
 
       if (jsonResponse['error'] != null) {
-        print("jsonResponse['error'] ${jsonResponse['error']["message"]}");
+        // print("jsonResponse['error'] ${jsonResponse['error']["message"]}");
         throw HttpException(jsonResponse['error']["message"]);
       }
-      print("jsonResponse $jsonResponse");
+      // print("jsonResponse $jsonResponse");
       List temp = [];
       for (var value in jsonResponse["data"]) {
         temp.add(value);
         // log("temp ${value["id"]}");
       }
-
-      var i = temp[5];
-      print('List = $i');
       return ModelsModel.modelsFromSnapshot(temp);
-
     } catch (error) {
       log("error $error");
       rethrow;
