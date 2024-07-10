@@ -1,5 +1,6 @@
 
 Current Tutorial:
+1:34 Implement that chats model
 50:00 Explain the API Documentation
 40:00 Implement the modal bottom sheet
 30:00 Build the chat widget

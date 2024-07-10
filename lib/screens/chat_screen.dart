@@ -1,7 +1,11 @@
+import 'dart:developer';
+
 import 'package:chatgpt_flutter_tutorial/widgets/chat_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:provider/provider.dart';
 import '../constants/constants.dart';
+import '../providers/models_provider.dart';
 import '../services/api_services.dart';
 import '../services/assets_manger.dart';
 import '../services/services.dart';
@@ -14,7 +18,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final bool _isTyping = true;
+  bool _isTyping = false;
 
   late TextEditingController textEditingController;
 
@@ -24,7 +28,6 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
   }
 
-  // Always dispose controllers..
   @override
   void dispose() {
     textEditingController.dispose();
@@ -33,83 +36,92 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          elevation: 2,
-          leading: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Image.asset(AssetsManager.openaiLogo),
-          ),
-          title: const Text("ChatGPT"),
-          actions: [
-            IconButton(
-              onPressed: () async {
-                await Services.showModalSheet(context: context);
-              },
-              icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
-            ),
-          ],
+    final modelsProvider = Provider.of<ModelsProvider>(context);
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 2,
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Image.asset(AssetsManager.openaiLogo),
         ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              Flexible(
-                child: ListView.builder(
-                    itemCount: 6,
-                    itemBuilder: (context, index) {
-                      return ChatWidget(
-                        msg: chatMessages[index]["msg"].toString(),
-                        chatIndex: int.parse(
-                            chatMessages[index]["chatIndex"].toString()),
-                      );
-                    }),
-              ),
-              if (_isTyping) ...[
-                const SpinKitThreeBounce(
-                  color: Colors.white,
-                  size: 18,
-                ),
-                const SizedBox( // Creates spacing
-                  height: 15,
-                ),
-                Material( // Can be used to provide a background under all children
-                  color: cardColor,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            style: const TextStyle(color: Colors.white),
-                            controller: textEditingController,
-                            onSubmitted: (value) {
-                              // TODO send message
-                            },
-                            decoration: const InputDecoration.collapsed(
-                                hintText: "How can I help you",
-                                hintStyle: TextStyle(color: Colors.grey)),
-                          ),
-                        ),
-                        IconButton(
-                            onPressed: () async {
-                              try {
-                                await ApiService.getModels();
-                              } catch (error) {
-                                print("error $error");
-                              }
-                            },
-                            icon: const Icon(
-                              Icons.send,
-                              color: Colors.white,
-                            ))
-                      ],
-                    ),
-                  ),
-                ),
-              ]
-            ],
+        title: const Text("ChatGPT"),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await Services.showModalSheet(context: context);
+            },
+            icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
           ),
+        ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Flexible(
+              child: ListView.builder(
+                  itemCount: 6,
+                  itemBuilder: (context, index) {
+                    return ChatWidget(
+                      msg: chatMessages[index]["msg"].toString(),
+                      chatIndex: int.parse(
+                          chatMessages[index]["chatIndex"].toString()),
+                    );
+                  }),
+            ),
+            if (_isTyping) ...[
+              const SpinKitThreeBounce(
+                color: Colors.white,
+                size: 18,
+              ), ],
+            const SizedBox(
+              height: 15,
+            ),
+            Material(
+              color: cardColor,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        style: const TextStyle(color: Colors.white),
+                        controller: textEditingController,
+                        onSubmitted: (value) {
+                          // TODO send message
+                        },
+                        decoration: const InputDecoration.collapsed(
+                            hintText: "How can I help you",
+                            hintStyle: TextStyle(color: Colors.grey)),
+                      ),
+                    ),
+                    IconButton(
+                        onPressed: () async {
+                          try {
+                            setState(() {
+                              _isTyping = true;
+                            });
+                            await ApiService.sendMessage(
+                              content: textEditingController.text,
+                              modelId: modelsProvider.getCurrentModel,
+                            );
+                          } catch (error) {
+                            log("error $error");
+                          } finally {
+                            setState(() {
+                              _isTyping = false;
+                            });
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.send,
+                          color: Colors.white,
+                        ))
+                  ],
+                ),
+              ),
+            ),
+
+          ],
         ),
       ),
     );

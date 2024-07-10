@@ -5,7 +5,8 @@ import '../widgets/text_widget.dart';
 Color scaffoldBackgroundColor = const Color(0xFF343541);
 Color cardColor = const Color(0xFF444654);
 
-String BASE_URL = 'https://api.openai.com/v1';
+String BASE_CHAT_URL = 'https://api.openai.com/v1/chat';
+String BASE_MODELS_URL = 'https://api.openai.com/v1';
 
 // List<String> models = [
 //   'Model1',
